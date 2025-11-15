@@ -1,60 +1,86 @@
-<!doctype html>
-<div class="modal" id="overlay">
-<div class="panel" id="panel">
-<button id="close">Close</button>
-<div id="details"></div>
-</div>
-</div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Podcast Explorer</title>
+    <!--  Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
 
+  <body class="bg-gray-50 text-gray-800 font-sans">
+    <!--  Header -->
+    <header class="bg-white shadow-md py-6 mb-8">
+      <div class="container mx-auto px-6 text-center">
+        <h1 class="text-3xl font-bold text-indigo-700">🎧 Podcast Explorer</h1>
+        <p class="text-gray-500 mt-1">Discover and explore your favorite podcasts</p>
+      </div>
+    </header>
 
-<script type="module">
-import './PodcastPreview.js'; // make sure file is in same folder when testing
+    <!--  Filters -->
+    <section class="container mx-auto px-6 mb-8">
+      <div
+        class="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-lg shadow"
+      >
+        <!-- Search -->
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Search podcasts..."
+          class="w-full md:w-1/3 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        />
 
+        <!-- Genre Filter -->
+        <select
+          id="genreFilter"
+          class="w-full md:w-1/3 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        >
+          <option value="">All Genres</option>
+        </select>
 
-const data = [
-{ id: '10716', title: 'Something Was Wrong', genres: ['True Crime','Investigation'], seasons: 14, image: '', updated: '2025-10-01' },
-{ id: '2045', title: 'The Daily', genres: ['News','Politics'], seasons: 8, image: '', updated: '2025-11-01' },
-{ id: '333', title: 'Startup Stories', genres: ['Business','Interviews','Technology'], seasons: 3, image: '', updated: '2025-09-21' }
-];
+        <!-- Sort -->
+        <select
+          id="sortBy"
+          class="w-full md:w-1/3 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        >
+          <option value="updated">Sort by Latest</option>
+          <option value="title">Sort by Title (A–Z)</option>
+        </select>
+      </div>
+    </section>
 
+    <!--  Podcast Grid -->
+    <main class="container mx-auto px-6">
+      <div
+        id="podcastGrid"
+        class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      ></div>
+    </main>
 
-const grid = document.getElementById('grid');
+    <!--  Modal (Hidden by default) -->
+    <div
+      id="podcastModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 overflow-auto p-4"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        id="modalContent"
+        class="bg-white rounded-xl shadow-lg max-w-2xl w-full mx-auto relative p-6"
+      >
+        <!-- Content dynamically injected by app.js -->
+      </div>
+    </div>
 
+    <!--  Hidden Close Button (for accessibility) -->
+    <button
+      id="closeModal"
+      class="hidden"
+      aria-label="Close Modal"
+    ></button>
 
-data.forEach(p => {
-const el = document.createElement('podcast-preview');
-el.setAttribute('data-id', p.id);
-el.setAttribute('title', p.title);
-el.setAttribute('genres', p.genres.join(','));
-el.setAttribute('seasons', String(p.seasons));
-el.setAttribute('updated', p.updated);
-if (p.image) el.setAttribute('image', p.image);
-grid.appendChild(el);
-});
-
-
-// Listen to custom event from any podcast-preview
-document.addEventListener('podcast-select', (e) => {
-const { id, title } = e.detail;
-openModal(id, title);
-});
-
-
-const modal = document.getElementById('modal');
-const details = document.getElementById('details');
-const closeBtn = document.getElementById('close');
-
-
-function openModal(id, title){
-details.innerHTML = `<h2>${title}</h2><p>ID: ${id}</p><p>This is where your app would render podcast detail or open a full modal.</p>`;
-modal.hidden = false;
-}
-function closeModal(){ modal.hidden = true; }
-closeBtn.addEventListener('click', closeModal);
-document.getElementById('overlay').addEventListener('click', (ev) => {
-if (ev.target.id === 'overlay') closeModal();
-});
-</script>
-</body>
+    <!-- Script files -->
+    <script type="module" src="./PodcastPreview.js"></script>
+    <script type="module" src="./data.js"></script>
+  </body>
 </html>
