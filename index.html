@@ -1,86 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Podcast Explorer</title>
-    <!--  Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Podcast Explorer</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
 
-  <body class="bg-gray-50 text-gray-800 font-sans">
-    <!--  Header -->
-    <header class="bg-white shadow-md py-6 mb-8">
-      <div class="container mx-auto px-6 text-center">
-        <h1 class="text-3xl font-bold text-indigo-700">🎧 Podcast Explorer</h1>
-        <p class="text-gray-500 mt-1">Discover and explore your favorite podcasts</p>
-      </div>
-    </header>
+  <!-- Header -->
+  <header>
+    <h1>Podcast Explorer</h1>
+    <p>Discover and explore your favorite podcasts</p>
+  </header>
 
-    <!--  Filters -->
-    <section class="container mx-auto px-6 mb-8">
-      <div
-        class="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-lg shadow"
-      >
-        <!-- Search -->
-        <input
-          id="searchInput"
-          type="text"
-          placeholder="Search podcasts..."
-          class="w-full md:w-1/3 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        />
+  <!-- Filters -->
+  <section>
+    <input id="searchInput" type="text" placeholder="Search podcasts...">
+    <select id="genreFilter">
+      <option value="">All Genres</option>
+    </select>
+    <select id="sortBy">
+      <option value="updated">Sort by Latest</option>
+      <option value="title">Sort by Title (A–Z)</option>
+    </select>
+  </section>
 
-        <!-- Genre Filter -->
-        <select
-          id="genreFilter"
-          class="w-full md:w-1/3 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        >
-          <option value="">All Genres</option>
-        </select>
+  <!-- Podcast Grid -->
+  <main>
+    <div id="podcastGrid"></div>
+  </main>
 
-        <!-- Sort -->
-        <select
-          id="sortBy"
-          class="w-full md:w-1/3 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        >
-          <option value="updated">Sort by Latest</option>
-          <option value="title">Sort by Title (A–Z)</option>
-        </select>
-      </div>
-    </section>
+  <!-- Modal -->
+  <div id="podcastModal">
+    <div id="modalContent"></div>
+  </div>
 
-    <!--  Podcast Grid -->
-    <main class="container mx-auto px-6">
-      <div
-        id="podcastGrid"
-        class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-      ></div>
-    </main>
+  <!-- Scripts -->
+  <script type="module" src="./data.js"></script>
+  <script type="module" src="./PodcastPreview.js"></script>
+  <script type="module" src="./app.js"></script>
 
-    <!--  Modal (Hidden by default) -->
-    <div
-      id="podcastModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 overflow-auto p-4"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div
-        id="modalContent"
-        class="bg-white rounded-xl shadow-lg max-w-2xl w-full mx-auto relative p-6"
-      >
-        <!-- Content dynamically injected by app.js -->
-      </div>
-    </div>
-
-    <!--  Hidden Close Button (for accessibility) -->
-    <button
-      id="closeModal"
-      class="hidden"
-      aria-label="Close Modal"
-    ></button>
-
-    <!-- Script files -->
-    <script type="module" src="./PodcastPreview.js"></script>
-    <script type="module" src="./data.js"></script>
-  </body>
+</body>
 </html>
