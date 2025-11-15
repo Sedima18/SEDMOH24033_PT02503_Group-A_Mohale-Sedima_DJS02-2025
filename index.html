@@ -1,39 +1,60 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PodcastPreview Demo</title>
-</head>
-<body>
-  <h1>PodcastPreview Component — Demo</h1>
+<div class="modal" id="overlay">
+<div class="panel" id="panel">
+<button id="close">Close</button>
+<div id="details"></div>
+</div>
+</div>
+</div>
 
-  <div class="grid" id="grid"></div>
 
-  <script type="module">
-    import './PodcastPreview.js';
+<script type="module">
+import './PodcastPreview.js'; // make sure file is in same folder when testing
 
-    const data = [
-      {
-        id: "10716",
-        title: "Something Was Wrong",
-        genres: ["True Crime", "Investigation"],
-        seasons: 14,
-        updated: "2025-10-01",
-      }
-    ];
 
-    const grid = document.getElementById('grid');
+const data = [
+{ id: '10716', title: 'Something Was Wrong', genres: ['True Crime','Investigation'], seasons: 14, image: '', updated: '2025-10-01' },
+{ id: '2045', title: 'The Daily', genres: ['News','Politics'], seasons: 8, image: '', updated: '2025-11-01' },
+{ id: '333', title: 'Startup Stories', genres: ['Business','Interviews','Technology'], seasons: 3, image: '', updated: '2025-09-21' }
+];
 
-    data.forEach(p => {
-      const el = document.createElement('podcast-preview');
-      el.setAttribute("data-id", p.id);
-      el.setAttribute("title", p.title);
-      el.setAttribute("genres", p.genres.join(","));
-      el.setAttribute("seasons", p.seasons);
-      el.setAttribute("updated", p.updated);
-      grid.appendChild(el);
-    });
-  </script>
+
+const grid = document.getElementById('grid');
+
+
+data.forEach(p => {
+const el = document.createElement('podcast-preview');
+el.setAttribute('data-id', p.id);
+el.setAttribute('title', p.title);
+el.setAttribute('genres', p.genres.join(','));
+el.setAttribute('seasons', String(p.seasons));
+el.setAttribute('updated', p.updated);
+if (p.image) el.setAttribute('image', p.image);
+grid.appendChild(el);
+});
+
+
+// Listen to custom event from any podcast-preview
+document.addEventListener('podcast-select', (e) => {
+const { id, title } = e.detail;
+openModal(id, title);
+});
+
+
+const modal = document.getElementById('modal');
+const details = document.getElementById('details');
+const closeBtn = document.getElementById('close');
+
+
+function openModal(id, title){
+details.innerHTML = `<h2>${title}</h2><p>ID: ${id}</p><p>This is where your app would render podcast detail or open a full modal.</p>`;
+modal.hidden = false;
+}
+function closeModal(){ modal.hidden = true; }
+closeBtn.addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', (ev) => {
+if (ev.target.id === 'overlay') closeModal();
+});
+</script>
 </body>
 </html>
