@@ -1,5 +1,11 @@
+/**
+ * @file app.js
+ * Main application logic for the Podcast Explorer.
+ * Handles rendering podcasts, filtering, sorting, search, and modal display.
+ */
+
 import { podcasts, genres, seasons } from "./data.js";
-import "./PodcastPreview.js";
+import "./components/PodcastPreview.js";
 
 // DOM elements
 const podcastGrid = document.getElementById("podcastGrid");
@@ -10,29 +16,19 @@ const modal = document.getElementById("podcastModal");
 const modalContent = document.getElementById("modalContent");
 
 /**
- * Get genre names from genre IDs
- * @param {number[]} genreIds
- * @returns {string[]}
+ * Populate genre filter dynamically
  */
-function getGenreNames(genreIds) {
-  return genres
-    .filter(g => genreIds.includes(g.id))
-    .map(g => g.title);
-}
+const allGenres = Array.from(new Set(genres.map(g => g.title)));
+allGenres.forEach(genreTitle => {
+  const option = document.createElement("option");
+  option.value = genreTitle;
+  option.textContent = genreTitle;
+  genreFilter.appendChild(option);
+});
 
 /**
- * Get seasons info for a podcast
- * @param {string} podcastId
- * @returns {{title: string, episodes: number}[]}
- */
-function getSeasons(podcastId) {
-  const podcastSeasons = seasons.find(s => s.id === podcastId);
-  return podcastSeasons ? podcastSeasons.seasonDetails : [];
-}
-
-/**
- * Render the list of podcasts in the grid
- * @param {Object[]} list - List of podcast objects
+ * Render a list of podcasts into the grid
+ * @param {Array} list - Array of podcast objects
  */
 function renderPodcasts(list) {
   podcastGrid.innerHTML = "";
@@ -41,45 +37,43 @@ function renderPodcasts(list) {
     card.setAttribute("id", p.id);
     card.setAttribute("title", p.title);
     card.setAttribute("image", p.image);
-    card.setAttribute("genres", getGenreNames(p.genres).join(", "));
+    card.setAttribute("genres", p.genres.join(",")); // pass raw genre IDs
     card.setAttribute("seasons", p.seasons);
     card.setAttribute("updated", p.updated);
     podcastGrid.appendChild(card);
   });
 }
 
-// Populate genre filter dynamically
-const allGenres = Array.from(new Set(podcasts.flatMap(p => p.genres)));
-allGenres.forEach(gid => {
-  const genre = genres.find(g => g.id === gid);
-  if (!genre) return;
-  const option = document.createElement("option");
-  option.value = genre.id;
-  option.textContent = genre.title;
-  genreFilter.appendChild(option);
-});
-
 // Initial render
 renderPodcasts(podcasts);
 
-// -----------------------------
-// Filters & Search
-// -----------------------------
+/**
+ * Filter podcasts by selected genre
+ */
 genreFilter.addEventListener("change", () => {
-  const value = parseInt(genreFilter.value);
-  const filtered = value
-    ? podcasts.filter(p => p.genres.includes(value))
+  const value = genreFilter.value;
+  let filtered = value
+    ? podcasts.filter(p =>
+        p.genres.some(id => {
+          const genre = genres.find(g => g.id === id);
+          return genre?.title === value;
+        })
+      )
     : podcasts;
   renderPodcasts(filtered);
 });
 
+/**
+ * Search podcasts by title
+ */
 searchInput.addEventListener("input", () => {
   const term = searchInput.value.toLowerCase();
-  renderPodcasts(
-    podcasts.filter(p => p.title.toLowerCase().includes(term))
-  );
+  renderPodcasts(podcasts.filter(p => p.title.toLowerCase().includes(term)));
 });
 
+/**
+ * Sort podcasts by title or updated date
+ */
 sortBy.addEventListener("change", () => {
   const value = sortBy.value;
   let sorted = [...podcasts];
@@ -88,37 +82,45 @@ sortBy.addEventListener("change", () => {
   renderPodcasts(sorted);
 });
 
-// -----------------------------
-// Modal functionality
-// -----------------------------
+/**
+ * Open modal when a podcast is selected
+ */
 document.addEventListener("podcast-selected", e => {
   const podcast = podcasts.find(p => p.id === e.detail.id);
   if (!podcast) return;
 
-  const genreNames = getGenreNames(podcast.genres).join(", ");
-  const seasonInfo = getSeasons(podcast.id)
-    .map(s => `<li>${s.title} – ${s.episodes} episodes</li>`)
-    .join("");
+  const podcastSeasons = seasons.find(s => s.id === podcast.id)?.seasonDetails || [];
+
+  const genreNames = podcast.genres
+    .map(id => genres.find(g => g.id === id)?.title)
+    .filter(Boolean)
+    .join(", ");
 
   modalContent.innerHTML = `
-    <div class="modal-inner" style="background: #fff; padding: 20px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative;">
-      <button id="closeModalBtn" style="position:absolute; top:10px; right:10px; padding:5px 10px; cursor:pointer;">Close</button>
-      <img src="${podcast.image}" alt="${podcast.title}" style="width:100%; border-radius:8px; margin-bottom:15px;">
-      <h2>${podcast.title}</h2>
-      <p>${podcast.description}</p>
-      <p><strong>Genres:</strong> ${genreNames}</p>
-      <p><strong>Updated:</strong> ${new Date(podcast.updated).toLocaleDateString()}</p>
-      <h3>Seasons</h3>
-      <ul>${seasonInfo}</ul>
+    <div class="modal-inner">
+      <img src="${podcast.image}" alt="${podcast.title}" class="w-full mb-4 rounded-lg"/>
+      <h2 class="text-2xl font-bold mb-2">${podcast.title}</h2>
+      <p class="mb-2"><strong>Genres:</strong> ${genreNames}</p>
+      <p class="mb-4">${podcast.description}</p>
+      <p class="mb-2"><strong>Updated:</strong> ${new Date(podcast.updated).toLocaleDateString()}</p>
+      <h3 class="text-xl font-semibold mt-4 mb-2">Seasons</h3>
+      <ul>
+        ${podcastSeasons
+          .map(s => `<li>${s.title} - ${s.episodes} episodes</li>`)
+          .join("")}
+      </ul>
+      <button id="closeModalBtn" class="mt-6 bg-indigo-600 text-white px-4 py-2 rounded-lg">Close</button>
     </div>
   `;
+
   modal.classList.remove("hidden");
 
-  // Close modal
-  document.getElementById("closeModalBtn").onclick = () => modal.classList.add("hidden");
+  document.getElementById("closeModalBtn").addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
 });
 
-// Close modal when clicking outside
+// Close modal on outside click
 modal.addEventListener("click", e => {
   if (e.target === modal) modal.classList.add("hidden");
 });
