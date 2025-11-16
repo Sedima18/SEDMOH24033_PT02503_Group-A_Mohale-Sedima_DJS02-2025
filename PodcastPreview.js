@@ -1,25 +1,32 @@
 /**
  * @module PodcastPreview
  * A reusable Web Component that displays a podcast preview card.
- * Emits a custom "podcast-selected" event when clicked.
+ * Clicking the card opens a detailed modal view.
  */
+
+import { genres, seasons } from "../data.js";
+
 export class PodcastPreview extends HTMLElement {
   static get observedAttributes() {
-    return ["title", "image", "genres", "seasons", "updated"];
+    return ["id", "title", "image", "genres", "description", "updated"];
   }
 
   constructor() {
     super();
+    /** @type {ShadowRoot} */
     this.shadow = this.attachShadow({ mode: "open" });
     this.render();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue !== newValue) {
-      this.render();
-    }
+    if (oldValue !== newValue) this.render();
   }
 
+  /**
+   * Format ISO date string to readable format.
+   * @param {string} dateStr 
+   * @returns {string}
+   */
   formatDate(dateStr) {
     if (!dateStr) return "Unknown";
     return new Date(dateStr).toLocaleDateString(undefined, {
@@ -29,20 +36,13 @@ export class PodcastPreview extends HTMLElement {
     });
   }
 
-  emitSelection() {
-    const event = new CustomEvent("podcast-selected", {
-      detail: { id: this.getAttribute("id") },
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
-  }
-
+  /**
+   * Render the podcast preview card.
+   */
   render() {
     const title = this.getAttribute("title") || "Untitled Podcast";
     const image = this.getAttribute("image") || "";
-    const genres = this.getAttribute("genres") || "Unknown";
-    const seasons = this.getAttribute("seasons") || "0";
+    const genresAttr = this.getAttribute("genres") || "";
     const updated = this.formatDate(this.getAttribute("updated"));
 
     this.shadow.innerHTML = `
@@ -61,7 +61,6 @@ export class PodcastPreview extends HTMLElement {
         }
         img {
           width: 100%;
-          height: auto;
           border-radius: 6px;
           margin-bottom: 10px;
         }
@@ -75,17 +74,66 @@ export class PodcastPreview extends HTMLElement {
           color: #333;
         }
       </style>
-
       <div class="card">
         <img src="${image}" alt="${title}">
         <h3>${title}</h3>
-        <p><strong>Genres:</strong> ${genres}</p>
-        <p><strong>Seasons:</strong> ${seasons}</p>
+        <p><strong>Genres:</strong> ${genresAttr}</p>
         <p><strong>Updated:</strong> ${updated}</p>
       </div>
     `;
 
-    this.shadow.querySelector(".card").onclick = () => this.emitSelection();
+    this.shadow.querySelector(".card").onclick = () => this.openModal();
+  }
+
+  /**
+   * Opens a modal with detailed podcast info.
+   */
+  openModal() {
+    const podcastId = this.getAttribute("id");
+    const description = this.getAttribute("description") || "";
+    const title = this.getAttribute("title") || "";
+    const image = this.getAttribute("image") || "";
+    const updated = this.formatDate(this.getAttribute("updated"));
+    const genresAttr = this.getAttribute("genres") || "";
+
+    const seasonInfo = seasons.find(s => s.id === podcastId)?.seasonDetails || [];
+
+    // Create modal element
+    const modal = document.createElement("div");
+    modal.id = "podcastModal";
+    modal.style.position = "fixed";
+    modal.style.top = 0;
+    modal.style.left = 0;
+    modal.style.width = "100%";
+    modal.style.height = "100%";
+    modal.style.backgroundColor = "rgba(0,0,0,0.5)";
+    modal.style.display = "flex";
+    modal.style.alignItems = "center";
+    modal.style.justifyContent = "center";
+    modal.style.zIndex = 1000;
+
+    modal.innerHTML = `
+      <div style="max-width:600px;width:90%;background:#fff;padding:20px;border-radius:8px;position:relative;overflow-y:auto;max-height:90%;">
+        <button id="closeModalBtn" style="position:absolute;top:10px;right:10px;padding:5px 10px;background:#e53e3e;color:white;border:none;border-radius:4px;cursor:pointer;">Close</button>
+        <h2 style="margin-bottom:10px;">${title}</h2>
+        <img src="${image}" alt="${title}" style="width:100%;border-radius:8px;margin-bottom:10px;">
+        <p style="margin-bottom:6px;"><strong>Genres:</strong> ${genresAttr}</p>
+        <p style="margin-bottom:6px;"><strong>Updated:</strong> ${updated}</p>
+        <p style="margin-bottom:10px;">${description}</p>
+        <h3>Seasons:</h3>
+        <ul>
+          ${seasonInfo.map(s => `<li>${s.title} - ${s.episodes} episodes</li>`).join("")}
+        </ul>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Close modal events
+    modal.querySelector("#closeModalBtn").onclick = () => modal.remove();
+    modal.onclick = e => {
+      if (e.target === modal) modal.remove();
+    };
   }
 }
 
