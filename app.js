@@ -1,5 +1,5 @@
 import { podcasts, genres, seasons } from "./data.js";
-import "./components/PodcastPreview.js";
+import "./PodcastPreview.js";
 
 // DOM elements
 const podcastGrid = document.getElementById("podcastGrid");
