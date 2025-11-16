@@ -71,4 +71,4 @@ function initEvents() {
 // ------------------------
 populateGenres();
 renderPodcasts(podcasts);
-initEvents();
+initEvents()
